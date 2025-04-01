@@ -1,8 +1,11 @@
 import sqlite3
 import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 # Caminho do banco de dados
-db_path = "db/d_storage_mqtt.sqlite"
+db_path = os.getenv("DB_PATH")
 
 # Função para criar a tabela no banco de dados, se não existir
 def create_table():

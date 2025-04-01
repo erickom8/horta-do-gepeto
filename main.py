@@ -14,7 +14,7 @@ app = FastAPI()
 current_temperature = 0.0
 
 # Configurações do MQTT
-broker = os.getenv("MQTT_BROKER")  # Substitua pelo endereço do seu broker MQTT
+broker = os.getenv("MQTT_BROKER")
 topic = os.getenv("MQTT_TOPIC")
 fan_topic = os.getenv("FAN_TOPIC")
 print(fan_topic)
@@ -57,4 +57,4 @@ def control_fan(temperature):
         print("Ventoinha desligada")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
