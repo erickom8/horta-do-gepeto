@@ -1,9 +1,9 @@
+import joblib
 import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-import joblib
-from datetime import datetime, timedelta
 
 def prepare_data():
     """Prepara os dados de temperatura para treinamento do modelo.
@@ -20,13 +20,13 @@ def prepare_data():
         - hour: Hora do dia (0-23)
         - day_of_week: Dia da semana (0-6)
         - month: Mês (1-12)
-        - DAYTON_MW: Temperatura atual
+        - temperatura: Temperatura registrada
         - next_hour_temp: Temperatura da próxima hora (variável alvo)
     """
     # Alterar para o arquivo CSV contendo apenas os dados de temperatura por tempo
-    df = pd.read_csv('db/MLTempDataset.csv')
+    df = pd.read_csv('db/dados_temperatura.csv')
     
-    df['Datetime'] = pd.to_datetime(df['Datetime'])
+    df['Datetime'] = pd.to_datetime(df['timestamp'])
     df = df.sort_values('Datetime')
     
     # Colunas para medição 
@@ -35,10 +35,14 @@ def prepare_data():
     df['month'] = df['Datetime'].dt.month
     
     # Criando variável alvo (temperatura da próxima hora)
-    df['next_hour_temp'] = df['DAYTON_MW'].shift(-1)
+    df['next_hour_temp'] = df['temperatura'].shift(-1)
     df = df.dropna() # Removendo valores nulos
 
-    return df
+    # Obtendo a última temperatura e data/hora registrada
+    ultima_temperatura = df['temperatura'].iloc[-1]
+    ultima_data_hora = df['Datetime'].iloc[-1]
+
+    return df, ultima_temperatura, ultima_data_hora
 
 def train_model():
     """Treina o modelo de regressão linear para previsão de temperatura.
@@ -55,10 +59,10 @@ def train_model():
     -----
     O modelo é salvo em 'temperature_model.joblib' para uso futuro.
     """
-    df = prepare_data()   
+    df, _, _ = prepare_data()   
 
     # Configurando parametros de source e target
-    features = ['hour', 'day_of_week', 'month', 'DAYTON_MW']
+    features = ['hour', 'day_of_week', 'month', 'temperatura']
     X = df[features]
     y = df['next_hour_temp']
     
@@ -112,9 +116,8 @@ if __name__ == "__main__":
     print("Training the model...")
     model = train_model()
     
-    # Example prediction
-    current_time = datetime.now()
-    current_temp = 25.0  # Example current temperature
+    # Obtendo a última temperatura e data/hora registrada
+    _, current_temp, current_time = prepare_data()
     
     next_hour_temp = predict_next_hour(current_temp, current_time)
     print(f"\nPrediction for next hour ({current_time + timedelta(hours=1)}):")
